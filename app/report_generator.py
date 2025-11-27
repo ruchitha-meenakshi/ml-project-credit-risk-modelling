@@ -166,5 +166,13 @@ def generate_risk_report_pdf(inputs, results):
 
     # Finalize and get the PDF as bytes
     # FINAL FIX: Force conversion to standard 'bytes' object.
-    pdf_bytes = bytes(pdf.output(dest='S'))
-    return pdf_bytes
+    # pdf_bytes = bytes(pdf.output(dest='S'))
+    # return pdf_bytes
+    pdf_string = pdf.output(dest='S')
+
+    buffer = BytesIO()
+    # Write the encoded string content to the binary buffer
+    buffer.write(pdf_string.encode('latin-1'))
+    buffer.seek(0)
+
+    return buffer.read()
