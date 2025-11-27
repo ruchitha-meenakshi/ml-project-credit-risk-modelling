@@ -78,7 +78,10 @@ def generate_risk_report_pdf(inputs, results):
 
 
     # Finalize and get the PDF as bytes
-    buffer = BytesIO()
-    pdf.output(buffer)  # <-- Write directly to the buffer
-    return buffer.getvalue()  # <-- Return the bytes from the buffer
-
+    # buffer = BytesIO()
+    # pdf.output(buffer)  # <-- Write directly to the buffer
+    # return buffer.getvalue()  # <-- Return the bytes from the buffer
+    # Finalize and get the PDF as bytes
+    # FIX: Output with dest='S' returns bytes directly, which is what Streamlit's download_button expects.
+    pdf_bytes = pdf.output(dest='S')
+    return pdf_bytes

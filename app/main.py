@@ -129,15 +129,15 @@ if st.button('🎯 Calculate Risk Score & Decision', type="primary"):
     # 3. Data Collection for Report
     # FIX: Ensure dictionary keys and string values do not contain '₹'
     input_data_for_report = {
-        'Age (Years)': age,
-        'Annual Income (Unit)': income,
-        'Requested Loan Amount (Unit)': loan_amount,
-        'Loan Tenure (months)': loan_tenure_months,
-        'Loan-to-Income Ratio': round(loan_to_income_ratio, 3),
-        'Avg DPD': avg_dpd_per_delinquency,
-        'Delinquency Ratio (%)': delinquency_ratio,
-        'Credit Utilization Ratio (%)': credit_utilization_ratio,
-        'Open Loan Accounts': num_open_accounts,
+        'Age (Years)': str(age),
+        'Annual Income (Unit)': f"{income:,}",  # Formatted string
+        'Requested Loan Amount (Unit)': f"{loan_amount:,}",  # Formatted string
+        'Loan Tenure (months)': str(loan_tenure_months),
+        'Loan-to-Income Ratio': f"{loan_to_income_ratio:.3f}",
+        'Avg DPD': str(avg_dpd_per_delinquency),
+        'Delinquency Ratio (%)': str(delinquency_ratio),
+        'Credit Utilization Ratio (%)': str(credit_utilization_ratio),
+        'Open Loan Accounts': str(num_open_accounts),
         'Residence Type': residence_type,
         'Loan Purpose': loan_purpose,
         'Loan Type': loan_type
@@ -154,26 +154,16 @@ if st.button('🎯 Calculate Risk Score & Decision', type="primary"):
 
     # Display Inputs in a table
     df_inputs = pd.DataFrame(input_data_for_report.items(), columns=['Feature', 'Value'])
-
-    # Ensure numeric stays numeric
-    def try_numeric(x):
-        try:
-            return pd.to_numeric(x)
-        except Exception:
-            return x
-
-
-    df_inputs['Value'] = df_inputs['Value'].apply(try_numeric)
-
     st.dataframe(df_inputs.set_index('Feature'), width="stretch")
 
     # Add the PDF Download Button
+    # The pdf_bytes variable now receives bytes directly from pdf.output(dest='S')
     pdf_bytes = generate_risk_report_pdf(input_data_for_report, results_for_report)
 
     st.download_button(
         label="⬇️ Download PDF Risk Report",
         data=pdf_bytes,
-        file_name=f"Lauki_Credit_Report_{age}_{loan_amount}.pdf",  # Unique file name
+        file_name=f"Lauki_Credit_Report_{age}_{loan_amount}.pdf",
         mime="application/pdf",
         type="secondary"
     )
