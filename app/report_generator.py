@@ -81,11 +81,12 @@
 #     pdf_bytes = pdf.output(dest='S')
 #     return pdf_bytes
 
+# report_generator.py
+
 from fpdf import FPDF
 from io import BytesIO
 import pandas as pd
-import base64
-
+# REMOVED: import base64
 
 def generate_risk_report_pdf(inputs, results):
     """Generates a PDF report containing the inputs and prediction results."""
@@ -160,18 +161,10 @@ def generate_risk_report_pdf(inputs, results):
         pdf.cell(col_width, 6, str(row['Feature']), 1, 0, 'L', 0)
         pdf.cell(col_width, 6, str(row['Value']), 1, 1, 'L', 0)
 
-    pdf.ln(5)  # Add spacing after the table
+    pdf.ln(5)
 
-    # --- 3. Model Explainability Note (Crucial for content size) ---
-    pdf.set_font('Arial', 'B', 10)
-    pdf.cell(0, 5, 'Model Note:', 0, 1, 'L')
-    pdf.set_font('Arial', 'I', 10)
-    # The multi_cell function is essential, but needs proper spacing around it.
-    pdf.multi_cell(0, 5,
-                   'The decision is based on an XGBoost model, optimized for maximizing Recall on the Default class to mitigate financial loss. The underlying features are pre-processed using Weight of Evidence (WOE) transformation, which captures non-linear relationships with high interpretability for future rule engine integration.',
-                   0, 'L')
 
     # Finalize and get the PDF as bytes
-    # pdf.output(dest='S') is the correct and final syntax for getting bytes object.
-    pdf_bytes = pdf.output(dest='S')
+    # FINAL FIX: Force conversion to standard 'bytes' object.
+    pdf_bytes = bytes(pdf.output(dest='S'))
     return pdf_bytes
