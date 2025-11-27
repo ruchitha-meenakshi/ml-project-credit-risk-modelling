@@ -78,12 +78,5 @@ def generate_risk_report_pdf(inputs, results):
 
 
     # Finalize and get the PDF as bytes
-    buffer = BytesIO()
-
-    # FIX: Use pdf.output(dest='S', out=buffer) to correctly stream the finalized PDF
-    # content to the BytesIO buffer.
-    pdf.output(dest='S', out=buffer)
-
-    # Reset buffer position to the start and return the content
-    buffer.seek(0)
-    return buffer.getvalue()
+    pdf_bytes = pdf.output(dest='S')
+    return pdf_bytes
