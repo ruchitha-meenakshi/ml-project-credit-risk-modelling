@@ -1,0 +1,14 @@
+Column,VIF
+age,5.429171110635806
+number_of_dependants,2.7267739225014225
+years_at_current_address,3.4037115729763476
+zipcode,3.7778849959272134
+loan_tenure_months,6.0187243702372415
+bank_balance_at_application,1.8046928102745594
+number_of_open_accounts,4.353486810713981
+number_of_closed_accounts,2.372448604439735
+enquiry_count,6.384109513984366
+credit_utilization_ratio,2.919821762623861
+loan_to_income,4.560911539217462
+delinquency_ratio,1.933693880235369
+avg_dpd_per_delinquency,2.9061310633669986
