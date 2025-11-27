@@ -130,10 +130,10 @@ if st.button('🎯 Calculate Risk Score & Decision', type="primary"):
     # FIX: Ensure dictionary keys and string values do not contain '₹'
     input_data_for_report = {
         'Age (Years)': age,
-        'Annual Income (Unit)': f"{income:,}",
-        'Requested Loan Amount (Unit)': f"{loan_amount:,}",
+        'Annual Income (Unit)': income,
+        'Requested Loan Amount (Unit)': loan_amount,
         'Loan Tenure (months)': loan_tenure_months,
-        'Loan-to-Income Ratio': f"{loan_to_income_ratio:.2f}",
+        'Loan-to-Income Ratio': round(loan_to_income_ratio, 3),
         'Avg DPD': avg_dpd_per_delinquency,
         'Delinquency Ratio (%)': delinquency_ratio,
         'Credit Utilization Ratio (%)': credit_utilization_ratio,
@@ -154,7 +154,18 @@ if st.button('🎯 Calculate Risk Score & Decision', type="primary"):
 
     # Display Inputs in a table
     df_inputs = pd.DataFrame(input_data_for_report.items(), columns=['Feature', 'Value'])
-    st.dataframe(df_inputs.set_index('Feature'), use_container_width=True)
+
+    # Ensure numeric stays numeric
+    def try_numeric(x):
+        try:
+            return pd.to_numeric(x)
+        except Exception:
+            return x
+
+
+    df_inputs['Value'] = df_inputs['Value'].apply(try_numeric)
+
+    st.dataframe(df_inputs.set_index('Feature'), width="stretch")
 
     # Add the PDF Download Button
     pdf_bytes = generate_risk_report_pdf(input_data_for_report, results_for_report)
