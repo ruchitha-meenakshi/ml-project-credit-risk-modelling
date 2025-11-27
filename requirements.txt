@@ -10,4 +10,5 @@ imbalanced-learn
 optuna
 joblib
 pyarrow
+fpdf
 
