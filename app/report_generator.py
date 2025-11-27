@@ -81,5 +81,4 @@ def generate_risk_report_pdf(inputs, results):
     buffer = BytesIO()
     pdf.output(buffer)  # <-- Write directly to the buffer
     return buffer.getvalue()  # <-- Return the bytes from the buffer
-    # pdf_bytes = pdf.output(dest='S').encode('latin1')
-    # return pdf_bytes
+
