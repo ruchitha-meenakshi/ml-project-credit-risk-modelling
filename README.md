@@ -12,14 +12,14 @@ The project simulates a real engagement with **Lauki Finance**, an NBFC that pro
 
 The final solution includes:
 
-✔ A full data cleaning & preprocessing pipeline
-✔ Exploratory data analysis & business-rule validation
-✔ Advanced feature engineering
-✔ Model training with imbalance handling (RUS + SMOTETomek)
-✔ Hyperparameter tuning using Optuna
-✔ Model packaging & versioning
-✔ Deployment-ready Streamlit UI
-✔ Automated PDF credit report generator
+- A full data cleaning & preprocessing pipeline
+- Exploratory data analysis & business-rule validation
+- Advanced feature engineering
+- Model training with imbalance handling (RUS + SMOTETomek)
+- Hyperparameter tuning using Optuna
+- Model packaging & versioning
+- Deployment-ready Streamlit UI
+- Automated PDF credit report generator
 
 ---
 
@@ -51,10 +51,10 @@ These bottlenecks restricted business growth and limited their ability to scale.
 
 Seeing potential in Steve’s vision, Bruce reached out to Tony at AtliQ.ai to build a system that could:
 
-⚡ Automate credit decisioning
-⚡ Reduce dependency on manual reviews
-⚡ Improve risk prediction accuracy
-⚡ Support faster loan approvals
+⚡ Automate credit decisioning  
+⚡ Reduce dependency on manual reviews  
+⚡ Improve risk prediction accuracy  
+⚡ Support faster loan approvals  
 ⚡ Maintain transparency & explainability for regulatory needs
 
 Tony assigned **Peter** as the project lead. What began as a “small assignment” turned into a foundational AI initiative for Lauki Finance.
@@ -98,8 +98,9 @@ ml-project-credit-risk-modelling
 │
 ├── outputs/                          # EDA, model evaluation artifacts
 │   ├── figures/                      # ROC, KS, Rank Ordering plots
-│   └── models/                       # EDA/testing pickles
+│   ├── models/                       # EDA/testing pickles
 │   └── tables/                       # Rank Ordering tables
+│
 ├── scripts/                          # Jupyter notebooks
 │   ├── 01_data_cleaning_eda.ipynb
 │   ├── 02_feature_engineering.ipynb
@@ -133,131 +134,124 @@ ml-project-credit-risk-modelling
 
 # 🔍 **Model Overview**
 
-This is a **binary classification** problem where:
+This project addresses a **binary classification** problem where the objective is to estimate the likelihood of a borrower defaulting on a loan. The target variable is defined as follows:
 
-| Target Variable State | Numeric Value | Business Meaning |           Risk Category            | 
-| --------------------- | ------------- | ---------------- | ---------------------------------- |
-| Default = False       |        0      | Non-Defaulter    | "Good" Customer (Desired outcome)  |
-| Default = True        |        1      | Defaulter        | "Bad" Customer (Event of Interest) |
+| Target Class | Value      | Business Interpretation                                 |
+| ------------ | ---------- | ------------------------------------------------------- |
+| **0**        | No Default | Customer is expected to repay (Good / Non-Event)        |
+| **1**        | Default    | Customer is likely to default (Bad / Event of Interest) |
 
+Lauki Finance’s business requirement strongly emphasizes **high recall on the defaulter class**, ensuring fewer risky applicants are incorrectly approved.
 
-### 📌 Models Explored:
+### 📌 **Models Evaluated**
 
-| Model               | Notes                                   |
-| ------------------- | --------------------------------------- |
-| Logistic Regression | Interpretable, regulation-friendly      |
-| Random Forest       | High performance, less explainable      |
-| XGBoost             | Strong predictive power, black-box risk |
+A range of models were explored to balance predictive performance and explainability:
 
----
+| Model                   | Rationale                                                                                                               |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Logistic Regression** | Highly interpretable; aligns with financial regulatory expectations; easy to translate coefficients into business rules |
+| **Random Forest**       | Strong non-linear modelling capability; good baseline for complex interactions                                          |
+| **XGBoost**             | High predictive power; excellent handling of tabular data, though lower interpretability                                |
 
-# 🧹 **Data Cleaning & Business Rule Validation**
-
-Before modeling, several **business rules** were implemented:
-
-### ✔ Processing Fee Validation
-
-* Must NOT exceed **3%** of loan amount
-* 5 records violated the rule → removed
-
-### ✔ GST Validation
-
-* Must NOT exceed **20%** of loan amount
-
-### ✔ Net Disbursement
-
-* Must be ≤ loan amount
-
-### ✔ Imputation
-
-* Missing categorical: mode
-* Missing numeric: domain-informed logic
-
-This ensured a **clean, regulation-ready dataset**.
+Logistic Regression was selected as the **final model** due to its strong performance, interpretability, and alignment with business constraints.
 
 ---
 
-# 🏗️ **Feature Engineering**
+## **Data Cleaning & Business Rule Enforcement**
 
-### Engineered Key Features
+Prior to modelling, several domain-driven validation rules were applied to ensure data quality and regulatory readiness:
 
-| Feature                             | Why It’s Important                          |
-| ----------------------------------- | ------------------------------------------- |
-| `loan_to_income`                    | Strongest predictor of repayment capability |
-| `delinquency_ratio`                 | Indicates past payment behavior             |
-| `avg_dpd_per_delinquency`           | Stability of repayments                     |
-| One-hot encoded residence/loan type | Behavioral segmentation                     |
-| MinMax scaling                      | Ensures model stability                     |
+### Business Rule Validations
 
-All transformations were saved with the model to ensure deployability.
+| Rule                                   | Description                                | Outcome                    |
+| -------------------------------------- | ------------------------------------------ | -------------------------- |
+| **Processing Fee ≤ 3% of Loan Amount** | Ensures fees are realistic                 | 5 records removed          |
+| **GST ≤ 20%**                          | Tax amount validation                      | No violations detected     |
+| **Net Disbursement ≤ Loan Amount**     | Prevents negative or inflated disbursement | No violations detected     |
+| **Missing Values Handling**            | Categorical → Mode; Numeric → Domain logic | All missing values imputed |
 
----
-
-# ⚖️ **Handling Class Imbalance**
-
-Default class was **highly imbalanced**.
-Techniques attempted:
-
-### 1️⃣ Random Undersampling
-
-* Pros: Balanced data
-* Cons: Loss of information
-
-### 2️⃣ SMOTE + Tomek Links (Final Choice)
-
-* Pros: Synthetic minority samples + noise removal
-* Stable decision boundary
-* Best recall score
+These checks ensured a **clean and credible modelling dataset** aligned with financial industry standards.
 
 ---
 
-# 🔧 **Hyperparameter Optimization (Optuna)**
+## **Feature Engineering**
 
-A search space was designed for:
+A combination of domain knowledge and statistical insights informed the creation of high-impact features:
 
-* C
-* Solver
-* Tolerance
-* Class weights
+| Feature                                  | Contribution                                                    |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| **Loan-to-Income Ratio**                 | Primary indicator of repayment capacity                         |
+| **Delinquency Ratio (%)**                | Measures historical repayment discipline                        |
+| **Avg DPD per Delinquency**              | Captures severity of past delays                                |
+| **Credit Utilization Ratio (%)**         | Reflects overall credit stress                                  |
+| **One-hot encoded categorical features** | Enables behavioural segmentation                                |
+| **MinMax Scaling**                       | Stabilizes model training and ensures coefficient comparability |
 
-Final params:
+All transformations were persisted to ensure **consistent preprocessing during deployment**.
 
-```
+---
+
+## **Class Imbalance Strategy**
+
+The dataset exhibited a **significant imbalance** toward non-defaulters. Two approaches were tested:
+
+### 1️⃣ **Random Undersampling**
+
+* Balanced the classes but removed valuable majority-class information.
+
+### 2️⃣ **SMOTE + Tomek Links (Final Approach)**
+
+* Generated synthetic minority samples while removing borderline/noisy observations.
+* Provided the most stable performance with strong recall on the minority (default) class.
+
+This combination produced a balanced training dataset without distorting real-world distributions.
+
+---
+
+## **Hyperparameter Optimization (Optuna)**
+
+A targeted Optuna search optimized Logistic Regression parameters, exploring:
+
+* Regularization strength (**C**)
+* Optimization algorithms (**solver**)
+* Convergence threshold (**tol**)
+* Class weighting strategies
+
+**Best Parameters Identified:**
+
+```text
 C = 4.46
-solver = 'saga'
+solver = "saga"
 tol = 6.3e-06
-class_weight = 'balanced'
+class_weight = "balanced"
 ```
 
----
-
-# 📈 **Model Evaluation**
-
-### ✔ Classification Report (Final Model)
-
-| Metric        | Default Class Result            |
-| ------------- | ------------------------------- |
-| **Recall**    | **94%** ✔ Meets business target |
-| **Precision** | **56%** ✔ Meets business target |
-| **F1 Score**  | 70%                             |
+These settings maximized recall while maintaining model stability and interpretability.
 
 ---
 
-### ✔ ROC-AUC = **0.98**
+## 📈 **Model Performance Evaluation**
 
-Outstanding discrimination capability.
+### **Classification Metrics (Default Class)**
 
-### ✔ Gini Coefficient = **0.96**
+| Metric        | Value    | Status                           |
+| ------------- | -------- | -------------------------------- |
+| **Recall**    | **94%**  | ✔ Meets business target          |
+| **Precision** | **56%**  | ✔ Acceptable (with human review) |
+| **F1-Score**  | **0.70** | Balanced performance             |
 
-Strong rank ordering.
+---
 
-### ✔ KS Statistic = **85.9%**
+### **Robustness Metrics**
 
-Excellent separation between “Good” and “Bad” customers.
+| Metric                   | Value     | Interpretation                                |
+| ------------------------ | --------- | --------------------------------------------- |
+| **ROC–AUC**              | **0.98**  | Exceptional discriminatory power              |
+| **Gini Coefficient**     | **0.96**  | Strong rank ordering capability               |
+| **KS Statistic**         | **85.9%** | Excellent separation of good vs bad customers |
+| **Decile Rank Ordering** | Achieved  | Higher deciles capture higher-risk borrowers  |
 
-### ✔ Decile Ordering
-
-Monotonic ordering achieved → highly deployment-ready.
+Collectively, these metrics confirm that the model is **deployment-ready**, exhibits strong discriminatory power, and satisfies Lauki Finance’s operational and regulatory needs.
 
 ---
 
@@ -265,12 +259,12 @@ Monotonic ordering achieved → highly deployment-ready.
 
 The deployed Streamlit application enables:
 
-✔ Real-time data entry
-✔ Automated feature engineering
-✔ Probability of default calculation
-✔ Credit score generation (300–900)
-✔ Risk category: Excellent / Good / Average / Poor
-✔ Downloadable PDF credit report
+✔ Real-time data entry  
+✔ Automated feature engineering  
+✔ Probability of default calculation  
+✔ Credit score generation (300–900)  
+✔ Risk category: Excellent / Good / Average / Poor  
+✔ Downloadable PDF credit report  
 ✔ Clean, modern UI with custom CSS
 
 📌 **Live App:** [https://ml-project-credit-risk-modelling-codebasics.streamlit.app/](https://ml-project-credit-risk-modelling-codebasics.streamlit.app/)
@@ -288,8 +282,8 @@ After generating a prediction, the app allows users to **download a complete cre
 
 This feature simulates a **real NBFC workflow**, enabling easy auditing and documentation of credit decisions.
 
-📌 **Sample PDF Output:**
-![PDF Report Demo](<img width="772" height="647" alt="Screenshot 2025-11-28 at 11 03 15" src="https://github.com/user-attachments/assets/4e8624f1-5685-43c4-bd73-9c3995ffa895" />)
+📌 **Sample PDF Output:**  
+<img width="772" height="647" alt="Screenshot 2025-11-28 at 11 03 15" src="https://github.com/user-attachments/assets/4e1a0be8-f0c3-45b1-a949-83deb897376e" />
 
 ---
 
@@ -356,9 +350,9 @@ This project helped me strengthen:
 
 Special thanks to:
 
-* **CodeBasics Team** – for industry-grade project design
-* **Dhaval Patel & Hemanand Vadivel** – for guidance
-* **AtliQ.ai fictional team** – for driving the narrative
+* **CodeBasics Bootcamp** – for industry-grade project design
+* **Dhaval Patel, Hemanand Vadivel & Team** – for guidance
+* **AtliQ.ai & Lauki Finance fictional team** – for driving the narrative
 
 ---
 
